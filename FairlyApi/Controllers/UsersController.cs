@@ -36,7 +36,7 @@ namespace FairlyApi.Controllers
         public async Task<ActionResult<IEnumerable<Group>>> GetUserGroups(Guid id)
         {
             var userExists = await _context.Users.AnyAsync(u => u.Id == id);
-            if (userExists == null)
+            if (!userExists)
             {
                 return NotFound("Usuario No encontrado");
             }

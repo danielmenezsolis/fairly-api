@@ -52,36 +52,37 @@ namespace FairlyApi.Controllers
         [HttpPost("equal-split")]
         public async Task<ActionResult<Expense>> CreateExpenseEqualSplit(CreateExpenseDto expenseDto)
         {
-            if (expenseDto.TotalAmount <= 0)
+            
+                // Validaciones
+                if (expenseDto.TotalAmount <= 0)
+                {
+                    return BadRequest(new { message = "El monto total debe ser mayor a 0" });
+                }
+                if (expenseDto.ParticipantIds == null || !expenseDto.ParticipantIds.Any())
+                {
+                    return BadRequest(new { message = "Debe haber al menos un participante" });
+                }
+             var group = await _context.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Id == expenseDto.GroupId);
+            if (group == null)
             {
-                return BadRequest(new { message = "Monto mayor a 0" });
+                return NotFound(new { message = "Grupo no encontrado" });
             }
-            if (expenseDto.ParticipantIds == null || !expenseDto.ParticipantIds.Any())
-            {
-                return BadRequest(new { message = "Debe haber al menos un participante" });
-            }
-            var groupId = _context.Groups.FindAsync(expenseDto.GroupId);
-            if (groupId == null)
-            {
-                return BadRequest(new { message = "Grupo No existe" });
-            }
-            var payerIsMember = await _context.GroupMembers
+           var payerIsMember = await _context.GroupMembers.AsNoTracking()
             .AnyAsync(gm => gm.GroupId == expenseDto.GroupId && gm.UserId == expenseDto.PayerId);
-
+        
             if (!payerIsMember)
             {
                 return BadRequest(new { message = "El pagador debe ser miembro del grupo" });
             }
-            // Verificar que todos los participantes son miembros del grupo
-            foreach (var participantId in expenseDto.ParticipantIds)
+            var memberIds = await _context.GroupMembers.AsNoTracking()
+             .Where(gm => gm.GroupId == expenseDto.GroupId)
+             .Select(gm => gm.UserId)
+             .ToListAsync();
+            
+             var invalidParticipants = expenseDto.ParticipantIds.Except(memberIds).ToList();
+            if (invalidParticipants.Any())
             {
-                var isMember = await _context.GroupMembers
-                    .AnyAsync(gm => gm.GroupId == expenseDto.GroupId && gm.UserId == participantId);
-
-                if (!isMember)
-                {
-                    return BadRequest(new { message = $"Todos los participantes deben ser miembros del grupo" });
-                }
+                return BadRequest(new { message = "Todos los participantes deben ser miembros del grupo" });
             }
             // Crear el gasto
             var expense = new Expense
@@ -100,6 +101,7 @@ namespace FairlyApi.Controllers
             var amountPerPerson = Math.Round(expenseDto.TotalAmount / expenseDto.ParticipantIds.Count, 2);
             var totalAssigned = amountPerPerson * expenseDto.ParticipantIds.Count;
             var difference = expenseDto.TotalAmount - totalAssigned;
+
             // Crear participantes
             for (int i = 0; i < expenseDto.ParticipantIds.Count; i++)
             {
@@ -240,22 +242,22 @@ namespace FairlyApi.Controllers
                 return NotFound(new { message = "Grupo no encontrado" });
             }
 
-            // Obtener todos los gastos del grupo
+            
             var expenses = await _context.Expenses
                 .Include(e => e.Participants)
                 .Where(e => e.GroupId == groupId)
                 .ToListAsync();
 
-            // Calcular balances
+           
             var balances = new Dictionary<Guid, decimal>();
 
-            // Inicializar balances en 0 para todos los miembros
+            
             foreach (var member in group.Members)
             {
                 balances[member.UserId] = 0;
             }
 
-            // Calcular balances
+            
             foreach (var expense in expenses)
             {
                 // El pagador recibe crédito (balance positivo)
@@ -264,7 +266,7 @@ namespace FairlyApi.Controllers
                     balances[expense.PayerId] += expense.TotalAmount;
                 }
 
-                // Los participantes deben dinero (balance negativo)
+                
                 foreach (var participant in expense.Participants)
                 {
                     if (balances.ContainsKey(participant.UserId))
@@ -274,7 +276,7 @@ namespace FairlyApi.Controllers
                 }
             }
 
-            // Crear DTOs de balance
+            
             var userBalances = balances.Select(kvp => new UserBalanceDto
             {
                 UserId = kvp.Key,
@@ -282,7 +284,7 @@ namespace FairlyApi.Controllers
                 Balance = kvp.Value
             }).OrderByDescending(b => b.Balance).ToList();
 
-            // Calcular liquidaciones sugeridas (simplificación de deudas)
+            
             var settlements = CalculateSettlements(userBalances);
 
             var summary = new GroupBalanceSummaryDto
@@ -374,7 +376,7 @@ namespace FairlyApi.Controllers
             existingExpense.Description = expense.Description;
             existingExpense.ExpenseDate = expense.ExpenseDate;
 
-            try
+             try
             {
                 await _context.SaveChangesAsync();
             }
@@ -394,16 +396,23 @@ namespace FairlyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteExpense(int id)
         {
-            var expense = await _context.Expenses.FindAsync(id);
-            if (expense == null)
+            try
             {
-                return NotFound(new { message = "Gasto no encontrado" });
+                var expense = await _context.Expenses.FindAsync(id);
+                if (expense == null)
+                {
+                    return NotFound(new { message = "Gasto no encontrado" });
+                }
+
+                _context.Expenses.Remove(expense);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-
-            _context.Expenses.Remove(expense);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch(Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
     }

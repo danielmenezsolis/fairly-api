@@ -18,6 +18,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<FairlyDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+
 builder.Services.AddCors(options => options.AddPolicy("AllowAll", policy =>
 {
     policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
@@ -29,11 +31,12 @@ builder.Services.AddCors(options => options.AddPolicy("AllowAll", policy =>
 var app = builder.Build();
 
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fairly API v1");
+    c.RoutePrefix = "swagger"; // Acceder en /swagger
+});
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");

@@ -1,0 +1,150 @@
+1. Crear 3 Usuarios
+Usuario 1:
+jsonPOST /api/Users
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "Ana Rodríguez",
+  "email": "ana.rodriguez@example.com",
+  "profilePictureUrl": "https://i.pravatar.cc/150?img=5"
+}
+Usuario 2:
+jsonPOST /api/Users
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "Pedro Martínez",
+  "email": "pedro.martinez@example.com",
+  "profilePictureUrl": "https://i.pravatar.cc/150?img=12"
+}
+Usuario 3:
+jsonPOST /api/Users
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "Laura Sánchez",
+  "email": "laura.sanchez@example.com",
+  "profilePictureUrl": "https://i.pravatar.cc/150?img=9"
+}
+
+2. Crear 3 Grupos
+IMPORTANTE: Reemplaza CREATOR_ID con el ID real del usuario que acabas de crear.
+Grupo 1:
+jsonPOST /api/Groups
+{
+  "name": "Fin de Semana en la Playa",
+  "creatorId": "ANA_ID_AQUI"
+}
+Grupo 2:
+jsonPOST /api/Groups
+{
+  "name": "Cena de Cumpleaños",
+  "creatorId": "PEDRO_ID_AQUI"
+}
+Grupo 3:
+jsonPOST /api/Groups
+{
+  "name": "Viaje a las Montañas",
+  "creatorId": "LAURA_ID_AQUI"
+}
+
+3. Agregar Miembros a los Grupos
+IMPORTANTE: Reemplaza GROUP_ID con el ID del grupo y los UUIDs con los IDs reales de los usuarios.
+Agregar a Grupo 1 (Fin de Semana en la Playa):
+jsonPOST /api/Groups/1/members
+"PEDRO_ID_AQUI"
+jsonPOST /api/Groups/1/members
+"LAURA_ID_AQUI"
+Agregar a Grupo 2 (Cena de Cumpleaños):
+jsonPOST /api/Groups/2/members
+"ANA_ID_AQUI"
+jsonPOST /api/Groups/2/members
+"LAURA_ID_AQUI"
+Agregar a Grupo 3 (Viaje a las Montañas):
+jsonPOST /api/Groups/3/members
+"ANA_ID_AQUI"
+jsonPOST /api/Groups/3/members
+"PEDRO_ID_AQUI"
+
+4. Crear Gastos con División Equitativa
+Gasto 1 - Grupo 1:
+jsonPOST /api/Expenses/equal-split
+{
+  "groupId": 1,
+  "payerId": "ANA_ID_AQUI",
+  "totalAmount": 450.00,
+  "description": "Hotel por 2 noches",
+  "expenseDate": "2025-01-15",
+  "participantIds": [
+    "ANA_ID_AQUI",
+    "PEDRO_ID_AQUI",
+    "LAURA_ID_AQUI"
+  ]
+}
+Gasto 2 - Grupo 1:
+jsonPOST /api/Expenses/equal-split
+{
+  "groupId": 1,
+  "payerId": "PEDRO_ID_AQUI",
+  "totalAmount": 180.50,
+  "description": "Comida en el restaurante del mar",
+  "expenseDate": "2025-01-16",
+  "participantIds": [
+    "ANA_ID_AQUI",
+    "PEDRO_ID_AQUI",
+    "LAURA_ID_AQUI"
+  ]
+}
+Gasto 3 - Grupo 1:
+jsonPOST /api/Expenses/equal-split
+{
+  "groupId": 1,
+  "payerId": "LAURA_ID_AQUI",
+  "totalAmount": 75.00,
+  "description": "Gasolina ida y vuelta",
+  "expenseDate": "2025-01-15",
+  "participantIds": [
+    "ANA_ID_AQUI",
+    "PEDRO_ID_AQUI",
+    "LAURA_ID_AQUI"
+  ]
+}
+Gasto 4 - Grupo 2:
+jsonPOST /api/Expenses/equal-split
+{
+  "groupId": 2,
+  "payerId": "PEDRO_ID_AQUI",
+  "totalAmount": 320.00,
+  "description": "Reserva del restaurante",
+  "expenseDate": "2025-01-20",
+  "participantIds": [
+    "PEDRO_ID_AQUI",
+    "ANA_ID_AQUI",
+    "LAURA_ID_AQUI"
+  ]
+}
+Gasto 5 - Grupo 2:
+jsonPOST /api/Expenses/equal-split
+{
+  "groupId": 2,
+  "payerId": "ANA_ID_AQUI",
+  "totalAmount": 95.00,
+  "description": "Pastel y decoración",
+  "expenseDate": "2025-01-20",
+  "participantIds": [
+    "PEDRO_ID_AQUI",
+    "ANA_ID_AQUI",
+    "LAURA_ID_AQUI"
+  ]
+}
+Gasto 6 - Grupo 3:
+jsonPOST /api/Expenses/equal-split
+{
+  "groupId": 3,
+  "payerId": "LAURA_ID_AQUI",
+  "totalAmount": 600.00,
+  "description": "Cabaña por 3 noches",
+  "expenseDate": "2025-02-10",
+  "participantIds": [
+    "LAURA_ID_AQUI",
+    "ANA_ID_AQUI",
+    "PEDRO_ID_AQUI"
+  ]
+}

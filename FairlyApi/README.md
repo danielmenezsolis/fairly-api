@@ -48,6 +48,7 @@ https://localhost:7123/swagger
 ## Estructura de la Base de Datos
 
 Ver el archivo `database-schema.sql` para la estructura completa.
+VEr el archivo `datasetbase.json` con ejemplos de creación de registros desde la API
 
 ## Endpoints Principales
 
@@ -65,6 +66,8 @@ Ver el archivo `database-schema.sql` para la estructura completa.
 - `POST /api/Expenses/equal-split` - Crear gasto con división equitativa
 - `POST /api/Expenses/custom-split` - Crear gasto con división personalizada
 - `GET /api/Expenses/group/{groupId}/balances` - Ver balances del grupo
+
+
 
 ## Licencia
 
